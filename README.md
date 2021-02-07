@@ -31,7 +31,7 @@
 例如：
 
 ```
-clog dingding -u 芋头 -b https://code.aliyun.com/yunhuxi -p https://oapi.dingtalk.com/robot/send?access_token=7f2cb6b3682a6fda1e321ad49c1aefe98243eb40ce6b6a4c63f72664e3d8b57b
+clog dingding -u 芋头 -b https://gitlab.xx.com -p https://oapi.dingtalk.com/robot/send?access_token=xxx
 ```
 
 ## commit 规范
