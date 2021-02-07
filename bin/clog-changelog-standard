@@ -1,0 +1,116 @@
+#!/usr/bin/env node
+'use strict';
+
+const execSync = require('child_process').execSync;
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
+
+const PROJECT_ROOT = process.cwd();
+const CHANGELOG_PATH = path.resolve(PROJECT_ROOT, 'CHANGELOG.md');
+const CHANGELOG_TABLE_PATH = path.resolve(PROJECT_ROOT, 'CHANGELOG.md');
+
+const prefixTemplate = `
+| 版本 | 发布日期 | 变更记录 |
+| ---- | -------- | -------- |
+`;
+
+try {
+    execSync('conventional-changelog -p eslint -i CHANGELOG.md -s -r 0');
+} catch (e) {
+    console.log('生成 Changelog 失败', e.stack);
+    process.exit(1);
+}
+
+const changelogContent = fs.readFileSync(CHANGELOG_PATH, { encoding: 'utf8' });
+
+let changelogTable = generateAll(changelogContent);
+
+fs.writeFileSync(CHANGELOG_TABLE_PATH, prefixTemplate + changelogTable);
+
+/**
+ * 生成单个版本的信息
+ */
+function generateOneVersion (versionItem, previousVersion) {
+    let type = '';
+    let items = versionItem.split('\n').filter(i => i);
+
+    let version = items.shift();
+    version = version.replace('"></a>', '');
+
+    let date = items.shift();
+    date = date.match(/.+\((\d\d\d\d-\d\d-\d\d)\)/)[1];
+
+    let commits = '';
+
+    items.forEach((item, i) => {
+        if (item.indexOf('###') !== -1) {
+            type = item.match(/### (\w+)/)[1];
+        } else if (item.indexOf('* ') !== -1) {
+            let commitMessage = item.replace('* ', '').replace(/\(\[.+\]\(.+\)\)/g, '');
+            let commitShortHash = item.match(/\(\[([\w\d]{8})[\d\w]{32}\]/)[1];
+            commits += `${type}: ${commitMessage} (${commitShortHash})<br/>`;
+        }
+
+    });
+
+    let url = '';
+    try {
+        url = execSync('git config --get remote.origin.url', { encoding: 'utf-8' });
+    } catch (e) {
+        console.error('Error: 获取 git 地址失败', e.stack);
+    }
+
+    let repoNameSpace = url.match(/:(.*?)\.git/)[1];
+
+    let versionCompareUrl = '';
+    if (previousVersion) {
+        versionCompareUrl = `http://git.souche.com/${repoNameSpace}/compare/${previousVersion}...${version}`;
+    }
+
+    let versionContent = '';
+    if (versionCompareUrl) {
+        versionContent = `[${version}](${versionCompareUrl})`;
+    } else {
+        versionContent = version;
+    }
+
+    let result = `| ${versionContent} | ${date} | ${commits} |\n`;
+
+    return result;
+};
+
+function generateOnlineVersion (versionItem) {
+    let items = versionItem.split('\n').filter(i => i);
+
+    let version = items.shift();
+    version = version.replace('"></a>', '');
+
+    if (/^\d+\.\d+\.\d+$/.test(version) === false) {
+        return '';
+    }
+
+    return generateOneVersion(versionItem);
+}
+
+/**
+ * 生成所有版本信息
+ */
+function generateAll (changelog) {
+    let content = '';
+    let vers = changelog.split('<a name="') || [];
+    vers = vers.filter(ver => ver);
+
+    for (let i = 0; i < vers.length; i++) {
+        let previousVersion;
+
+        if (vers[i+1]) {
+            let items = vers[i+1].split('\n').filter(i => i);
+            previousVersion = items.shift().replace('"></a>', '');
+        }
+
+        content += generateOneVersion(vers[i], previousVersion);
+    }
+
+    return content;
+}

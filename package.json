@@ -1,0 +1,28 @@
+{
+  "version": "1.0.0",
+  "name": "git-clog",
+  "description": "changelog变更自动化工具",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:yu-tou/changelog-clog.git"
+  },
+  "author": "yutou",
+  "dependencies": {
+    "async": "*",
+    "commander": "^2.11.0",
+    "conventional-changelog": "^1.1.4",
+    "conventional-commits-parser": "^2.0.0",
+    "git-raw-commits": "^1.2.0",
+    "git-remote-origin-url": "^2.0.0",
+    "git-semver-tags": "^1.2.1",
+    "lodash": "^4.17.4",
+    "moment": "^2.18.1",
+    "ora": "^1.3.0",
+    "request": "^2.81.0",
+    "right-pad": "^1.0.1"
+  },
+  "bin": {
+    "clog": "./bin/clog"
+  },
+  "scripts": {}
+}

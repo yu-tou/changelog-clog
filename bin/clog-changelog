@@ -1,0 +1,3 @@
+#!/usr/bin/env node
+var c = require('../index.js');
+c.createChangeLog()

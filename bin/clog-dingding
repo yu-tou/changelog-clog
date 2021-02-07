@@ -1,0 +1,18 @@
+#!/usr/bin/env node
+// var c = require('../index.js');
+var program = require("commander");
+program
+  .version("0.1.0")
+  .option("-u, --userName <n>", "用户名")
+  .option("-p, --pushURL <n>", "钉钉hook地址")
+  .option("-n, --sdkName <n>", "项目名，例如 f2er/clog")
+  .option("-b, --baseURL <n>", "baseURL");
+var args = program.parse(process.argv);
+
+var c = require("../index.js");
+c.sendLastReleaseMessage(
+  args.userName,
+  args.sdkName,
+  args.pushURL,
+  args.baseURL
+);
